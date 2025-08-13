@@ -222,25 +222,33 @@ async function saveEventToSheets(event) {
             return;
         }
 
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'addEvent',
-                event: event
-            })
+        // Use form submission method to bypass CORS
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = APPS_SCRIPT_URL;
+        form.target = '_blank';
+        form.style.display = 'none';
+
+        const input = document.createElement('input');
+        input.name = 'data';
+        input.value = JSON.stringify({
+            action: 'addEvent',
+            event: event
         });
 
-        const result = await response.json();
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        console.log('Event submitted to Google Sheets');
         
-        if (result.success) {
-            console.log('Event saved to Google Sheets successfully');
-        } else {
-            console.error('Error saving event to Google Sheets:', result.error);
-            saveData(); // Fallback to localStorage
-        }
+        // Wait a moment then refresh data
+        setTimeout(async () => {
+            await loadEventsFromSheets();
+            generateCalendar();
+            generateUpcomingEvents();
+        }, 2000);
         
     } catch (error) {
         console.error('Error saving to Google Sheets:', error);
@@ -256,28 +264,36 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
             return;
         }
 
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'addPoll',
-                eventId: eventId,
-                userName: userName,
-                attending: attending,
-                timestamp: timestamp
-            })
+        // Use form submission method to bypass CORS
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = APPS_SCRIPT_URL;
+        form.target = '_blank';
+        form.style.display = 'none';
+
+        const input = document.createElement('input');
+        input.name = 'data';
+        input.value = JSON.stringify({
+            action: 'addPoll',
+            eventId: eventId,
+            userName: userName,
+            attending: attending,
+            timestamp: timestamp
         });
 
-        const result = await response.json();
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        console.log('Poll submitted to Google Sheets');
         
-        if (result.success) {
-            console.log('Poll saved to Google Sheets successfully');
-        } else {
-            console.error('Error saving poll to Google Sheets:', result.error);
-            saveData(); // Fallback to localStorage
-        }
+        // Wait a moment then refresh data
+        setTimeout(async () => {
+            await loadEventsFromSheets();
+            generateCalendar();
+            generateUpcomingEvents();
+        }, 2000);
         
     } catch (error) {
         console.error('Error saving poll to Google Sheets:', error);
