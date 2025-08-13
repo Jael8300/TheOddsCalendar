@@ -222,11 +222,16 @@ async function saveEventToSheets(event) {
             return;
         }
 
-        // Use form submission method to bypass CORS
+        // Create a hidden iframe to submit data without CORS issues
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.name = 'hiddenFrame';
+        document.body.appendChild(iframe);
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = APPS_SCRIPT_URL;
-        form.target = '_blank';
+        form.target = 'hiddenFrame';
         form.style.display = 'none';
 
         const input = document.createElement('input');
@@ -239,16 +244,14 @@ async function saveEventToSheets(event) {
         form.appendChild(input);
         document.body.appendChild(form);
         form.submit();
-        document.body.removeChild(form);
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(form);
+            document.body.removeChild(iframe);
+        }, 1000);
 
         console.log('Event submitted to Google Sheets');
-        
-        // Wait a moment then refresh data
-        setTimeout(async () => {
-            await loadEventsFromSheets();
-            generateCalendar();
-            generateUpcomingEvents();
-        }, 2000);
         
     } catch (error) {
         console.error('Error saving to Google Sheets:', error);
@@ -264,11 +267,16 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
             return;
         }
 
-        // Use form submission method to bypass CORS
+        // Create a hidden iframe to submit data without CORS issues
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.name = 'hiddenFrame' + Date.now();
+        document.body.appendChild(iframe);
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = APPS_SCRIPT_URL;
-        form.target = '_blank';
+        form.target = iframe.name;
         form.style.display = 'none';
 
         const input = document.createElement('input');
@@ -284,16 +292,14 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
         form.appendChild(input);
         document.body.appendChild(form);
         form.submit();
-        document.body.removeChild(form);
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(form);
+            document.body.removeChild(iframe);
+        }, 1000);
 
         console.log('Poll submitted to Google Sheets');
-        
-        // Wait a moment then refresh data
-        setTimeout(async () => {
-            await loadEventsFromSheets();
-            generateCalendar();
-            generateUpcomingEvents();
-        }, 2000);
         
     } catch (error) {
         console.error('Error saving poll to Google Sheets:', error);
