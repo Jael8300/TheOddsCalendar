@@ -222,11 +222,16 @@ async function saveEventToSheets(event) {
             return;
         }
 
-        // Create form and submit directly to a new window
+        // Create hidden iframe for silent submission
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.name = 'hiddenSubmission_' + Date.now();
+        document.body.appendChild(iframe);
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = APPS_SCRIPT_URL;
-        form.target = '_blank';
+        form.target = iframe.name;
         form.style.display = 'none';
 
         const input = document.createElement('input');
@@ -239,15 +244,14 @@ async function saveEventToSheets(event) {
         form.appendChild(input);
         document.body.appendChild(form);
         
-        console.log('Submitting event to:', APPS_SCRIPT_URL);
-        console.log('Event data:', JSON.stringify({action: 'addEvent', event: event}));
-        
+        console.log('Submitting event silently to Google Sheets');
         form.submit();
         
-        // Clean up after a delay
+        // Clean up after submission
         setTimeout(() => {
-            document.body.removeChild(form);
-        }, 1000);
+            if (document.body.contains(form)) document.body.removeChild(form);
+            if (document.body.contains(iframe)) document.body.removeChild(iframe);
+        }, 2000);
 
         console.log('Event submitted to Google Sheets');
         
@@ -265,11 +269,16 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
             return;
         }
 
-        // Create form and submit directly to a new window
+        // Create hidden iframe for silent submission
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.name = 'hiddenSubmission_' + Date.now();
+        document.body.appendChild(iframe);
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = APPS_SCRIPT_URL;
-        form.target = '_blank';
+        form.target = iframe.name;
         form.style.display = 'none';
 
         const input = document.createElement('input');
@@ -285,15 +294,14 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
         form.appendChild(input);
         document.body.appendChild(form);
         
-        console.log('Submitting poll to:', APPS_SCRIPT_URL);
-        console.log('Poll data:', JSON.stringify({action: 'addPoll', eventId, userName, attending, timestamp}));
-        
+        console.log('Submitting poll silently to Google Sheets');
         form.submit();
         
-        // Clean up after a delay
+        // Clean up after submission
         setTimeout(() => {
-            document.body.removeChild(form);
-        }, 1000);
+            if (document.body.contains(form)) document.body.removeChild(form);
+            if (document.body.contains(iframe)) document.body.removeChild(iframe);
+        }, 2000);
 
         console.log('Poll submitted to Google Sheets');
         
@@ -414,20 +422,25 @@ async function addEvent() {
     
     events[eventKey].push(newEvent);
     
-    // Clear form
+    // Clear form immediately
     document.getElementById('eventTitle').value = '';
     document.getElementById('eventDate').value = '';
     document.getElementById('eventTime').value = '';
     document.getElementById('eventDescription').value = '';
     
-    await saveEventToSheets(newEvent); // Save to Google Sheets
+    // Update calendar immediately with local data
+    generateCalendar();
+    generateUpcomingEvents();
     
-    // Refresh data to get latest from all users
+    // Save to Google Sheets in background
+    await saveEventToSheets(newEvent);
+    
+    // Refresh from Google Sheets after a delay to get any updates from other users
     setTimeout(async () => {
         await loadEventsFromSheets();
         generateCalendar();
         generateUpcomingEvents();
-    }, 1000); // Small delay to ensure Google Sheets is updated
+    }, 3000);
     
     alert('Event added successfully!');
 }
@@ -782,16 +795,36 @@ async function pollEvent(eventId, attending) {
             timestamp: timestamp
         };
         
-        await savePollToSheets(eventId, currentUser, attending, timestamp); // Save to Google Sheets
+        // Update calendar immediately with local data
+        generateCalendar();
+        generateUpcomingEvents();
         
-        // Refresh data to get latest polls from all users
+        // Update the modal content immediately if it's open
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent && document.getElementById('eventModal').style.display === 'block') {
+            const modalTitle = document.getElementById('modalTitle').textContent;
+            const dateMatch = modalTitle.match(/Events - (.+)/);
+            if (dateMatch) {
+                for (let dateKey in events) {
+                    const dateObj = new Date(dateKey);
+                    if (dateObj.toDateString() === dateMatch[1]) {
+                        openEventModal(dateKey);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Save to Google Sheets in background
+        await savePollToSheets(eventId, currentUser, attending, timestamp);
+        
+        // Refresh from Google Sheets after a delay to get updates from other users
         setTimeout(async () => {
             await loadEventsFromSheets();
             generateCalendar();
             generateUpcomingEvents();
             
-            // Update the modal content if it's open
-            const modalContent = document.querySelector('.modal-content');
+            // Update modal again if still open
             if (modalContent && document.getElementById('eventModal').style.display === 'block') {
                 const modalTitle = document.getElementById('modalTitle').textContent;
                 const dateMatch = modalTitle.match(/Events - (.+)/);
@@ -805,7 +838,7 @@ async function pollEvent(eventId, attending) {
                     }
                 }
             }
-        }, 1000); // Small delay to ensure Google Sheets is updated
+        }, 3000);
     }
 }
 
