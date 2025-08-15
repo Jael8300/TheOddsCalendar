@@ -222,16 +222,11 @@ async function saveEventToSheets(event) {
             return;
         }
 
-        // Create a hidden iframe to submit data without CORS issues
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.name = 'hiddenFrame';
-        document.body.appendChild(iframe);
-
+        // Create form and submit directly to a new window
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = APPS_SCRIPT_URL;
-        form.target = 'hiddenFrame';
+        form.target = '_blank';
         form.style.display = 'none';
 
         const input = document.createElement('input');
@@ -243,12 +238,15 @@ async function saveEventToSheets(event) {
 
         form.appendChild(input);
         document.body.appendChild(form);
+        
+        console.log('Submitting event to:', APPS_SCRIPT_URL);
+        console.log('Event data:', JSON.stringify({action: 'addEvent', event: event}));
+        
         form.submit();
         
-        // Clean up
+        // Clean up after a delay
         setTimeout(() => {
             document.body.removeChild(form);
-            document.body.removeChild(iframe);
         }, 1000);
 
         console.log('Event submitted to Google Sheets');
@@ -267,16 +265,11 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
             return;
         }
 
-        // Create a hidden iframe to submit data without CORS issues
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.name = 'hiddenFrame' + Date.now();
-        document.body.appendChild(iframe);
-
+        // Create form and submit directly to a new window
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = APPS_SCRIPT_URL;
-        form.target = iframe.name;
+        form.target = '_blank';
         form.style.display = 'none';
 
         const input = document.createElement('input');
@@ -291,12 +284,15 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
 
         form.appendChild(input);
         document.body.appendChild(form);
+        
+        console.log('Submitting poll to:', APPS_SCRIPT_URL);
+        console.log('Poll data:', JSON.stringify({action: 'addPoll', eventId, userName, attending, timestamp}));
+        
         form.submit();
         
-        // Clean up
+        // Clean up after a delay
         setTimeout(() => {
             document.body.removeChild(form);
-            document.body.removeChild(iframe);
         }, 1000);
 
         console.log('Poll submitted to Google Sheets');
@@ -311,13 +307,22 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
 function loadData() {
     try {
         const savedEvents = localStorage.getItem('oddsCalendar_events');
+        const savedUser = localStorage.getItem('oddsCalendar_currentUser');
         
         if (savedEvents) {
             events = JSON.parse(savedEvents);
         }
+        
+        if (savedUser) {
+            currentUser = savedUser;
+            document.getElementById('currentUserDisplay').innerHTML = 
+                `👤 Welcome back, <strong>${currentUser}</strong>! You can now view and poll on events.`;
+            document.getElementById('currentUserDisplay').style.display = 'block';
+        }
     } catch (error) {
         console.error('Error loading data:', error);
         events = {};
+        currentUser = null;
     }
 }
 
@@ -847,4 +852,3 @@ window.addEventListener('load', function() {
         checkExistingUser();
     }
 });
-
