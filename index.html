@@ -39,7 +39,7 @@
     <div id="contentWrapper" class="content-wrapper">
         <div class="container">
             <div class="header">
-                <h1>The Odds Calendar</h1>
+                <h1>📅 The Odds Calendar</h1>
             </div>
             
             <div class="user-section">
@@ -52,7 +52,7 @@
             </div>
             
             <div id="adminSection" class="admin-section" style="display: none;">
-                <h3>Admin Panel - Add Event</h3>
+                <h3>🛠️ Admin Panel - Add Event</h3>
                 <div class="event-form">
                     <div class="form-group">
                         <label>Event Title</label>
@@ -75,18 +75,18 @@
                 </div>
             </div>
             
+            <div class="upcoming-events">
+                <h3>📅 Upcoming Events</h3>
+                <div class="events-list" id="eventsList">
+                    <!-- Upcoming events will be generated here -->
+                </div>
+            </div>
+            
             <div class="calendar-controls">
                 <div class="month-nav">
                     <button class="btn btn-primary" onclick="changeMonth(-1)">← Previous</button>
                     <div class="month-display" id="monthDisplay"></div>
                     <button class="btn btn-primary" onclick="changeMonth(1)">Next →</button>
-                </div>
-            </div>
-
-            <div class="upcoming-events">
-                <h3>Upcoming Events</h3>
-                <div class="events-list" id="eventsList">
-                    <!-- Upcoming events will be generated here -->
                 </div>
             </div>
             
