@@ -1,9 +1,5 @@
 html, body {
-    background: #FAE3B0 !important;
-}
-
-body {
-    background: red !important;
+    background: #402924 !important;
 }
 
 * {
@@ -14,7 +10,7 @@ body {
 
 body {
     font-family: 'Helvetica', 'Garamond', 'Times New Roman', serif;
-    background: #FAE3B0 !important;
+    background: #402924 !important;
     min-height: 100vh;
     padding: 20px;
     color: #402924;
@@ -22,13 +18,13 @@ body {
 
 .content-wrapper {
     display: none;
-    background: #FAE3B0 !important;
+    background: #402924 !important;
     min-height: 100vh;
 }
 
 .content-wrapper.visible {
     display: block;
-    background: #FAE3B0 !important;
+    background: #402924 !important;
 }
 
 .container {
@@ -38,22 +34,22 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    border: 1px solid #d1d5db;
+    border: 1px solid #402924;
 }
 
 .header {
-    background: #FAE3B0 !important;
-    color: #402924;
+    background: #402924 !important;
+    color: #FAE3B0;
     padding: 32px;
     text-align: center;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #402924;
 }
 
 .header h1 {
     font-size: 2.25rem;
     margin-bottom: 8px;
     font-weight: 700;
-    color: #402924;
+    color: #FAE3B0;
 }
 
 .header p {
@@ -63,8 +59,8 @@ body {
 
 .user-section {
     padding: 24px 32px;
-    background: #FAE3B0 !important;
-    border-bottom: 1px solid #e2e8f0;
+    background: #402924 !important;
+    border-bottom: 1px solid #402924;
 }
 
 .user-input {
@@ -89,12 +85,12 @@ body {
 .user-input input:focus {
     outline: none;
     border-color: #402924;
-    box-shadow: 0 0 0 3px rgba(64, 41, 36, 0.1);
+    box-shadow: 0 0 0 3px rgba(229, 51, 11, 0.1);
 }
 
 .btn {
     padding: 8px 12px;
-    border: 2px solid transparent;
+    border: 2px solid #F4D68C;
     border-radius: 6px;
     font-size: 12px;
     cursor: pointer;
@@ -104,22 +100,25 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #FAE3B0;
+    background: #402924;
+    color: #F4D68C;
 }
 
 .btn-primary {
-    border-color: #402924;
-    color: #402924;
+    border-color: #F4D68C;
+    color: #F4D68C;
+    background: #402924;
 }
 
 .btn-primary:hover {
-    background: #402924;
-    color: white;
+    background: #F4D68C;
+    color: #402924;
 }
 
 .btn-success {
     border-color: #B2AB2B;
     color: #B2AB2B;
+    background: #FAE3B0;
 }
 
 .btn-success:hover {
@@ -130,6 +129,7 @@ body {
 .btn-danger {
     border-color: #D14C18;
     color: #D14C18;
+    background: #FAE3B0;
 }
 
 .btn-danger:hover {
@@ -149,13 +149,13 @@ body {
 
 .admin-section {
     padding: 24px 32px;
-    background: #F4D68C;
-    border-bottom: 1px solid #e2e8f0;
+    background: #402924;
+    border-bottom: 1px solid #402924;
 }
 
 .admin-section h3 {
     margin-bottom: 20px;
-    color: #402924;
+    color: #FAE3B0;
     font-weight: 600;
 }
 
@@ -175,7 +175,7 @@ body {
     display: block;
     margin-bottom: 6px;
     font-weight: 500;
-    color: #402924;
+    color: #FAE3B0;
     font-size: 14px;
 }
 
@@ -186,7 +186,7 @@ body {
     border-radius: 8px;
     font-size: 14px;
     transition: border-color 0.2s;
-    background: #FAE3B0;
+    background:#FAE3B0 ;
     color: #402924;
 }
 
@@ -203,12 +203,12 @@ body {
 
 .upcoming-events {
     padding: 24px 32px;
-    background: #FAE3B0 !important;
-    border-bottom: 1px solid #e2e8f0;
+    background: #402924 !important;
+    border-bottom: 1px solid #402924;
 }
 
 .upcoming-events h3 {
-    color: #402924;
+    color: #FAE3B0;
     margin-bottom: 16px;
     font-size: 1.25rem;
     font-weight: 600;
@@ -241,10 +241,20 @@ body {
     color: white;
 }
 
+.event-item.attending:hover {
+    background: #9A942A;
+    border-color: #9A942A;
+}
+
 .event-item.not-attending {
     border-color: #7C9DD2;
     background: #7C9DD2;
     color: white;
+}
+
+.event-item.not-attending:hover {
+    background: #6B8BC4;
+    border-color: #6B8BC4;
 }
 
 .event-item.not-polled {
@@ -253,10 +263,20 @@ body {
     color: white;
 }
 
+.event-item.not-polled:hover {
+    background: #B83D14;
+    border-color: #B83D14;
+}
+
 .event-item.no-user {
     border-color: #402924;
     background: #402924;
     color: white;
+}
+
+.event-item.no-user:hover {
+    background: #673C33;
+    border-color: #673C33;
 }
 
 .event-title {
@@ -281,11 +301,11 @@ body {
 
 .calendar-controls {
     padding: 24px 32px;
-    background: #FAE3B0 !important;
+    background: #402924 !important;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #402924;
 }
 
 .month-nav {
@@ -297,14 +317,14 @@ body {
 .month-display {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #402924;
+    color: #FAE3B0;
     min-width: 200px;
     text-align: center;
 }
 
 .calendar {
     padding: 32px;
-    background: #FAE3B0 !important;
+    background: #402924 !important;
     display: flex;
     justify-content: center;
 }
@@ -313,8 +333,8 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
-    background: #e5e7eb;
-    border: 1px solid #e5e7eb;
+    background: #FAE3B0;
+    border: 1px solid #FAE3B0;
     border-radius: 8px;
     overflow: hidden;
     max-width: 600px;
@@ -355,8 +375,8 @@ body {
 
 .calendar-day.other-month {
     color: #9ca3af;
-    background: #f9fafb;
-    border-color: #f3f4f6;
+    background: #180c09;
+    border-color: #180c09;
 }
 
 .calendar-day.has-event {
@@ -403,8 +423,8 @@ body {
     gap: 32px;
     justify-content: center;
     padding: 20px;
-    background: #FAE3B0 !important;
-    border-top: 1px solid #e2e8f0;
+    background: #402924 !important;
+    border-top: 1px solid #402924 ;
 }
 
 .legend-item {
@@ -412,15 +432,15 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #402924;
+    color: #FAE3B0;
 }
 
 .legend-color {
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    border: 2px solid;
-    background: #FAE3B0;
+    border: 9px solid;
+    background: #402924 ;
 }
 
 .legend-color.white { border-color: #d1d5db; }
@@ -436,30 +456,30 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: #FAE3B0;
+    background-color: #FAE3B0 ;
     align-items: center;
     justify-content: center;
 }
 
 .login-modal-content {
-    background-color: #FAE3B0;
+    background-color: #402924;
     padding: 40px;
     border-radius: 12px;
     width: 90%;
     max-width: 400px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    border: 2px solid #e5e7eb;
+    border: 2px solid #402924;
     text-align: center;
 }
 
 .login-modal h2 {
-    color: #402924;
+    color:  #FAE3B0;
     margin-bottom: 20px;
     font-size: 1.5rem;
 }
 
 .login-modal p {
-    color: #402924;
+    color:  #FAE3B0;
     margin-bottom: 24px;
 }
 
@@ -478,7 +498,7 @@ body {
 
 .user-option {
     padding: 12px 16px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid  #FAE3B0;
     cursor: pointer;
     transition: background-color 0.2s;
     text-align: left;
@@ -486,7 +506,7 @@ body {
 }
 
 .user-option:hover {
-    background-color: #f9fafb;
+    background-color: #B2AB2B;
 }
 
 .user-option:last-child {
@@ -494,14 +514,14 @@ body {
 }
 
 .user-option.selected {
-    background-color: #F4D68C;
-    border-left: 4px solid #E6C575;
+    background-color: #B2AB2B;
+    border-left: 4px solid #FAE3B0;
 }
 
 .or-divider {
     margin: 20px 0;
     text-align: center;
-    color: #402924;
+    color: #FAE3B0;
     position: relative;
 }
 
@@ -512,11 +532,11 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    background: #e5e7eb;
+    background: #FAE3B0;
 }
 
 .or-divider span {
-    background: #FAE3B0;
+    background: #402924;
     padding: 0 16px;
     position: relative;
 }
@@ -556,11 +576,11 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(250, 227, 176, 0.8);
+    background-color: #402924;
 }
 
 .modal-content {
-    background-color: #FAE3B0;
+    background-color: #402924;
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
@@ -583,8 +603,8 @@ body {
 }
 
 .modal-header {
-    background: #FAE3B0;
-    color: #402924;
+    background: #402924;
+    color: #FAE3B0;
     padding: 24px;
     border-radius: 12px 12px 0 0;
     border-bottom: 1px solid #e5e7eb;
@@ -592,11 +612,11 @@ body {
 
 .modal-body {
     padding: 24px;
-    background: #FAE3B0;
+    background: #402924;
 }
 
 .close {
-    color: #402924;
+    color: #FAE3B0;
     float: right;
     font-size: 24px;
     font-weight: normal;
@@ -613,7 +633,7 @@ body {
 }
 
 .event-details h3 {
-    color: #402924;
+    color: #FAE3B0;
     margin-bottom: 12px;
     font-weight: 600;
     font-size: 1.125rem;
@@ -622,15 +642,15 @@ body {
 .event-details p {
     margin-bottom: 8px;
     line-height: 1.6;
-    color: #402924;
+    color: #FAE3B0;
 }
 
 .polling-section {
-    background: #FAE3B0;
+    background: #402924;
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #FAE3B0;
 }
 
 .poll-buttons {
@@ -645,23 +665,23 @@ body {
     font-weight: 500;
     text-align: center;
     font-size: 14px;
-    background: #FAE3B0;
+    background: #402924;
 }
 
 .poll-status.attending {
     color: #B2AB2B;
-    border: 2px solid #B2AB2B;
+    border: 3px solid #B2AB2B;
 }
 
 .poll-status.not-attending {
     color: #7C9DD2;
-    border: 2px solid #7C9DD2;
+    border: 3px solid #7C9DD2;
 }
 
 .poll-status.not-voted {
     background: #F4D68C;
     color: #402924;
-    border: 2px solid #E6C575;
+    border: 3px solid #E6C575;
 }
 
 .poll-timestamp {
