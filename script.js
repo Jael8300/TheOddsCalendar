@@ -193,7 +193,7 @@ async function loadEventsFromSheets() {
                     const event = events[dateKey].find(e => e.id === parseInt(eventId));
                     if (event) {
                         event.polls[userName] = {
-                            attending: attending === 'true',
+                            attending: attending === 'true' || attending === true, // Handle both string and boolean
                             timestamp: timestamp
                         };
                     }
@@ -222,38 +222,43 @@ async function saveEventToSheets(event) {
             return;
         }
 
-        // Create hidden iframe for silent submission
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.name = 'hiddenSubmission_' + Date.now();
-        document.body.appendChild(iframe);
+        // Create a temporary iframe that submits and reports back
+        return new Promise((resolve) => {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.name = 'saveFrame_' + Date.now();
+            
+            // Listen for iframe load to know submission completed
+            iframe.onload = () => {
+                console.log('Event successfully saved to Google Sheets');
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
+                    if (document.body.contains(form)) document.body.removeChild(form);
+                    resolve();
+                }, 500);
+            };
+            
+            document.body.appendChild(iframe);
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = APPS_SCRIPT_URL;
-        form.target = iframe.name;
-        form.style.display = 'none';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = iframe.name;
+            form.style.display = 'none';
 
-        const input = document.createElement('input');
-        input.name = 'data';
-        input.value = JSON.stringify({
-            action: 'addEvent',
-            event: event
+            const input = document.createElement('input');
+            input.name = 'data';
+            input.value = JSON.stringify({
+                action: 'addEvent',
+                event: event
+            });
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+            
+            console.log('Saving event to Google Sheets...');
+            form.submit();
         });
-
-        form.appendChild(input);
-        document.body.appendChild(form);
-        
-        console.log('Submitting event silently to Google Sheets');
-        form.submit();
-        
-        // Clean up after submission
-        setTimeout(() => {
-            if (document.body.contains(form)) document.body.removeChild(form);
-            if (document.body.contains(iframe)) document.body.removeChild(iframe);
-        }, 2000);
-
-        console.log('Event submitted to Google Sheets');
         
     } catch (error) {
         console.error('Error saving to Google Sheets:', error);
@@ -269,41 +274,46 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
             return;
         }
 
-        // Create hidden iframe for silent submission
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.name = 'hiddenSubmission_' + Date.now();
-        document.body.appendChild(iframe);
+        // Create a temporary iframe that submits and reports back
+        return new Promise((resolve) => {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.name = 'saveFrame_' + Date.now();
+            
+            // Listen for iframe load to know submission completed
+            iframe.onload = () => {
+                console.log('Poll successfully saved to Google Sheets');
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
+                    if (document.body.contains(form)) document.body.removeChild(form);
+                    resolve();
+                }, 500);
+            };
+            
+            document.body.appendChild(iframe);
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = APPS_SCRIPT_URL;
-        form.target = iframe.name;
-        form.style.display = 'none';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = iframe.name;
+            form.style.display = 'none';
 
-        const input = document.createElement('input');
-        input.name = 'data';
-        input.value = JSON.stringify({
-            action: 'addPoll',
-            eventId: eventId,
-            userName: userName,
-            attending: attending,
-            timestamp: timestamp
+            const input = document.createElement('input');
+            input.name = 'data';
+            input.value = JSON.stringify({
+                action: 'addPoll',
+                eventId: eventId,
+                userName: userName,
+                attending: attending.toString(), // Ensure it's saved as string
+                timestamp: timestamp
+            });
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+            
+            console.log('Saving poll to Google Sheets...');
+            form.submit();
         });
-
-        form.appendChild(input);
-        document.body.appendChild(form);
-        
-        console.log('Submitting poll silently to Google Sheets');
-        form.submit();
-        
-        // Clean up after submission
-        setTimeout(() => {
-            if (document.body.contains(form)) document.body.removeChild(form);
-            if (document.body.contains(iframe)) document.body.removeChild(iframe);
-        }, 2000);
-
-        console.log('Poll submitted to Google Sheets');
         
     } catch (error) {
         console.error('Error saving poll to Google Sheets:', error);
@@ -432,15 +442,21 @@ async function addEvent() {
     generateCalendar();
     generateUpcomingEvents();
     
-    // Save to Google Sheets in background
-    await saveEventToSheets(newEvent);
-    
-    // Refresh from Google Sheets after a delay to get any updates from other users
-    setTimeout(async () => {
-        await loadEventsFromSheets();
-        generateCalendar();
-        generateUpcomingEvents();
-    }, 3000);
+    try {
+        // Save to Google Sheets and wait for confirmation
+        await saveEventToSheets(newEvent);
+        console.log('Event saved successfully to Google Sheets');
+        
+        // Refresh from Google Sheets to get any updates from other users
+        setTimeout(async () => {
+            await loadEventsFromSheets();
+            generateCalendar();
+            generateUpcomingEvents();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Failed to save to Google Sheets:', error);
+    }
     
     alert('Event added successfully!');
 }
