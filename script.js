@@ -189,6 +189,10 @@ async function loadEventsFromSheets() {
                 const [eventId, userName, attending, timestamp] = row;
                 
                 console.log(`📥 Loading poll: Event ${eventId}, User "${userName}", Attending: "${attending}" (type: ${typeof attending})`);
+                console.log(`🔍 Debug: attending value = "${attending}"`);
+                console.log(`🔍 Debug: attending.toString() = "${attending.toString()}"`);
+                console.log(`🔍 Debug: attending.toString().toLowerCase() = "${attending.toString().toLowerCase()}"`);
+                console.log(`🔍 Debug: comparison result = ${attending.toString().toLowerCase() === 'true'}`);
                 
                 // Find the event and add the poll
                 for (let dateKey in events) {
