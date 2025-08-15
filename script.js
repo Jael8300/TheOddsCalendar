@@ -646,7 +646,7 @@ function generatePollResults(event) {
                         </div>
                     </div>
                 `).join('') : 
-                '<span style="color: #673C33; font-size: 12px;">No one yet</span>'
+                '<span style="color: #402924; font-size: 12px;">No one yet</span>'
             }
         </div>
     `;
@@ -664,7 +664,7 @@ function generatePollResults(event) {
                         </div>
                     </div>
                 `).join('') : 
-                '<span style="color: #673C33; font-size: 12px;">No one yet</span>'
+                '<span style="color: #402924; font-size: 12px;">No one yet</span>'
             }
         </div>
     `;
@@ -675,7 +675,7 @@ function generatePollResults(event) {
     const totalPolls = attendingUsers.length + notAttendingUsers.length;
     if (totalPolls > 0) {
         resultsHTML += `
-            <div style="margin-top: 12px; text-align: center; font-size: 12px; color: #673C33;">
+            <div class="poll-summary" style="margin-top: 12px; text-align: center; font-size: 12px;">
                 Total responses: ${totalPolls} • ${attendingUsers.length} attending, ${notAttendingUsers.length} not attending
             </div>
         `;
@@ -868,3 +868,4 @@ window.addEventListener('load', function() {
         checkExistingUser();
     }
 });
+
