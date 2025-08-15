@@ -194,7 +194,8 @@ async function loadEventsFromSheets() {
                 for (let dateKey in events) {
                     const event = events[dateKey].find(e => e.id === parseInt(eventId));
                     if (event) {
-                        const attendingBool = attending === 'true' || attending === true;
+                        // Handle both "TRUE"/"true" and "FALSE"/"false" 
+                        const attendingBool = attending && (attending.toString().toLowerCase() === 'true');
                         event.polls[userName] = {
                             attending: attendingBool,
                             timestamp: timestamp
