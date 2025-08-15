@@ -117,24 +117,24 @@ body {
 
 .btn-success {
     border-color: #B2AB2B;
-    color: #B2AB2B;
-    background: #FAE3B0;
+    color: #FAE3B0;
+    background: #B2AB2B;
 }
 
 .btn-success:hover {
-    background: #B2AB2B;
-    color: white;
+    background: #dcd65c;
+    color: #FAE3B0;
 }
 
 .btn-danger {
     border-color: #D14C18;
-    color: #D14C18;
-    background: #FAE3B0;
+    color: #FAE3B0;
+    background: #D14C18;
 }
 
 .btn-danger:hover {
-    background: #D14C18;
-    color: white;
+    background: #e66c3c;
+    color: #FAE3B0;
 }
 
 .current-user {
@@ -586,9 +586,9 @@ body {
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     animation: modalSlideIn 0.3s ease;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #402924;
 }
 
 @keyframes modalSlideIn {
@@ -607,7 +607,7 @@ body {
     color: #FAE3B0;
     padding: 24px;
     border-radius: 12px 12px 0 0;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #402924;
 }
 
 .modal-body {
