@@ -188,14 +188,18 @@ async function loadEventsFromSheets() {
                 const row = pollsData.values[i];
                 const [eventId, userName, attending, timestamp] = row;
                 
+                console.log(`📥 Loading poll: Event ${eventId}, User "${userName}", Attending: "${attending}" (type: ${typeof attending})`);
+                
                 // Find the event and add the poll
                 for (let dateKey in events) {
                     const event = events[dateKey].find(e => e.id === parseInt(eventId));
                     if (event) {
+                        const attendingBool = attending === 'true' || attending === true;
                         event.polls[userName] = {
-                            attending: attending === 'true' || attending === true, // Handle both string and boolean
+                            attending: attendingBool,
                             timestamp: timestamp
                         };
+                        console.log(`📝 Poll processed: User "${userName}" attending: ${attendingBool} for event "${event.title}"`);
                     }
                 }
             }
@@ -222,43 +226,22 @@ async function saveEventToSheets(event) {
             return;
         }
 
-        // Create a temporary iframe that submits and reports back
-        return new Promise((resolve) => {
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.name = 'saveFrame_' + Date.now();
-            
-            // Listen for iframe load to know submission completed
-            iframe.onload = () => {
-                console.log('Event successfully saved to Google Sheets');
-                setTimeout(() => {
-                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
-                    if (document.body.contains(form)) document.body.removeChild(form);
-                    resolve();
-                }, 500);
-            };
-            
-            document.body.appendChild(iframe);
+        // Use fetch with no-cors mode to bypass CORS issues
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
+            action: 'addEvent',
+            event: event
+        }));
 
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = APPS_SCRIPT_URL;
-            form.target = iframe.name;
-            form.style.display = 'none';
-
-            const input = document.createElement('input');
-            input.name = 'data';
-            input.value = JSON.stringify({
-                action: 'addEvent',
-                event: event
-            });
-
-            form.appendChild(input);
-            document.body.appendChild(form);
-            
-            console.log('Saving event to Google Sheets...');
-            form.submit();
+        console.log('Saving event to Google Sheets...');
+        
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData
         });
+
+        console.log('Event submitted to Google Sheets (no-cors mode)');
         
     } catch (error) {
         console.error('Error saving to Google Sheets:', error);
@@ -274,46 +257,25 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
             return;
         }
 
-        // Create a temporary iframe that submits and reports back
-        return new Promise((resolve) => {
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.name = 'saveFrame_' + Date.now();
-            
-            // Listen for iframe load to know submission completed
-            iframe.onload = () => {
-                console.log('Poll successfully saved to Google Sheets');
-                setTimeout(() => {
-                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
-                    if (document.body.contains(form)) document.body.removeChild(form);
-                    resolve();
-                }, 500);
-            };
-            
-            document.body.appendChild(iframe);
+        // Use fetch with no-cors mode to bypass CORS issues
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
+            action: 'addPoll',
+            eventId: eventId,
+            userName: userName,
+            attending: attending.toString(), // Ensure it's a string
+            timestamp: timestamp
+        }));
 
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = APPS_SCRIPT_URL;
-            form.target = iframe.name;
-            form.style.display = 'none';
-
-            const input = document.createElement('input');
-            input.name = 'data';
-            input.value = JSON.stringify({
-                action: 'addPoll',
-                eventId: eventId,
-                userName: userName,
-                attending: attending.toString(), // Ensure it's saved as string
-                timestamp: timestamp
-            });
-
-            form.appendChild(input);
-            document.body.appendChild(form);
-            
-            console.log('Saving poll to Google Sheets...');
-            form.submit();
+        console.log(`Saving poll to Google Sheets: ${userName} -> ${attending}`);
+        
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData
         });
+
+        console.log('Poll submitted to Google Sheets (no-cors mode)');
         
     } catch (error) {
         console.error('Error saving poll to Google Sheets:', error);
