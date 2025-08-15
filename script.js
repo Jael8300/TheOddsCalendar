@@ -311,22 +311,13 @@ async function savePollToSheets(eventId, userName, attending, timestamp) {
 function loadData() {
     try {
         const savedEvents = localStorage.getItem('oddsCalendar_events');
-        const savedUser = localStorage.getItem('oddsCalendar_currentUser');
         
         if (savedEvents) {
             events = JSON.parse(savedEvents);
         }
-        
-        if (savedUser) {
-            currentUser = savedUser;
-            document.getElementById('currentUserDisplay').innerHTML = 
-                `👤 Welcome back, <strong>${currentUser}</strong>! You can now view and poll on events.`;
-            document.getElementById('currentUserDisplay').style.display = 'block';
-        }
     } catch (error) {
         console.error('Error loading data:', error);
         events = {};
-        currentUser = null;
     }
 }
 
@@ -856,3 +847,4 @@ window.addEventListener('load', function() {
         checkExistingUser();
     }
 });
+
