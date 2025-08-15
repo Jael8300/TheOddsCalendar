@@ -432,7 +432,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #FAE3B0;
+    color: #402924;
 }
 
 .legend-color {
@@ -643,6 +643,39 @@ body {
     margin-bottom: 8px;
     line-height: 1.6;
     color: #FAE3B0;
+}
+
+.event-details h3 {
+    color: #F4D68C !important; /* Yellow color */
+    margin-bottom: 12px;
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+/* Poll results heading */
+.event-details h4 {
+    color: #F4D68C !important; /* Yellow color */
+    font-size: 1rem;
+    margin-bottom: 12px;
+}
+
+/* Total responses summary text */
+.poll-summary {
+    color: #F4D68C !important; /* Yellow color */
+}
+
+/* Poll timestamp (Voted on: date) */
+.poll-timestamp {
+    font-size: 12px;
+    color: #F4D68C !important; /* Yellow color */
+    margin-top: 8px;
+}
+
+/* Polling section event title (the h4 in polling section) */
+.polling-section h4 {
+    color: #F4D68C !important; /* Yellow color */
+    margin-bottom: 12px;
+    font-size: 1.1rem;
 }
 
 .polling-section {
