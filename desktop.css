@@ -369,10 +369,6 @@ body {
     border-radius: 8px;
 }
 
-.calendar-day:hover {
-    background: #673C33;
-}
-
 .calendar-day.other-month {
     color: #9ca3af;
     background: #180c09;
@@ -389,10 +385,18 @@ body {
     border-color: #9A942A;
 }
 
+.calendar-day.polled-attending:hover {
+    background: #9A942A;
+}
+
 .calendar-day.polled-not-attending {
     background: #7C9DD2;
     color: white;
     border-color: #6B8BC4;
+}
+
+.calendar-day.polled-not-attending:hover {
+    background: #6B8BC4;
 }
 
 .calendar-day.not-polled {
@@ -432,7 +436,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #402924;
+    color: #F4D68C;
 }
 
 .legend-color {
@@ -739,5 +743,105 @@ body {
     
     .form-group {
         min-width: 100%;
+    }
+}
+
+/* Add this CSS to both desktop.css and mobile.css */
+
+/* Clickable poll options */
+.poll-option {
+    transition: all 0.2s ease;
+    cursor: pointer !important;
+}
+
+.poll-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-width: 3px !important;
+}
+
+/* When user has selected this option */
+.poll-option.user-selected {
+    box-shadow: 0 0 0 3px rgba(244, 214, 140, 0.3);
+    transform: scale(1.02);
+}
+
+/* Enhanced poll summary */
+.poll-summary {
+    color: #F4D68C !important;
+    font-weight: 500;
+    padding: 8px;
+    background: rgba(244, 214, 140, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(244, 214, 140, 0.3);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .poll-option {
+        padding: 16px !important;
+        margin-bottom: 8px;
+    }
+    
+    .poll-option h5 {
+        font-size: 16px !important;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 4px;
+    }
+    
+    .poll-option:hover {
+        transform: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Enhance current user highlighting */
+.poll-option span[style*="background: rgba"] {
+    border-radius: 4px !important;
+    font-weight: 600 !important;
+}
+
+/* Add this CSS to both desktop.css and mobile.css */
+
+/* Admin header with close button */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-header h3 {
+    margin: 0;
+    color: #FAE3B0;
+    font-weight: 600;
+}
+
+/* Close button styling */
+.admin-close {
+    color: #FAE3B0;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    line-height: 1;
+    padding: 0 5px;
+}
+
+.admin-close:hover {
+    color: #F4D68C;
+    transform: scale(1.1);
+}
+
+.admin-close:active {
+    transform: scale(0.95);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .admin-close {
+        font-size: 24px;
+        padding: 5px;
     }
 }
