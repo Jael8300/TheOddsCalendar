@@ -46,13 +46,16 @@
                 <div class="user-input">
                     <button class="btn btn-primary" onclick="showUserSwitcher()">Switch User</button>
                     <button class="btn btn-primary" onclick="toggleAdminMode()">Admin Mode</button>
-                    <button class="btn btn-primary" onclick="refreshFromSheets()">Refresh Data</button>
                 </div>
                 <div id="currentUserDisplay" class="current-user"></div>
             </div>
             
+            <!-- Replace your admin section HTML with this version -->
             <div id="adminSection" class="admin-section" style="display: none;">
-                <h3>Admin Panel - Add Event</h3>
+                <div class="admin-header">
+                    <h3>Admin Panel - Add Event</h3>
+                    <span class="admin-close" onclick="closeAdminMode()">&times;</span>
+                </div>
                 <div class="event-form">
                     <div class="form-group">
                         <label>Event Title</label>
@@ -74,7 +77,7 @@
                     <button class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
                 </div>
             </div>
-            
+                        
             <div class="upcoming-events">
                 <h3>Upcoming Events</h3>
                 <div class="events-list" id="eventsList">
@@ -116,7 +119,7 @@
             </div>
         </div>
         
-        <!-- Modal for event details -->
+        <!-- Replace your modal HTML with this version -->
         <div id="eventModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -125,7 +128,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="event-details" id="eventDetails"></div>
-                    <div class="polling-section" id="pollingSection"></div>
+                    <!-- Remove this line entirely: -->
+                    <!-- <div class="polling-section" id="pollingSection"></div> -->
                 </div>
             </div>
         </div>
