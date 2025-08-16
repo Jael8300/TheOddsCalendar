@@ -107,7 +107,7 @@ function completeLogin() {
     
     // Update user display
     document.getElementById('currentUserDisplay').innerHTML = 
-        `👤 Welcome, <strong>${currentUser}</strong>! You can now view and poll on events.`;
+        `Welcome, <strong>${currentUser}</strong>! You can now view and poll on events.`;
     document.getElementById('currentUserDisplay').style.display = 'block';
     
     // Save current user
@@ -899,3 +899,4 @@ function toggleAdminMode() {
     const adminSection = document.getElementById('adminSection');
     adminSection.style.display = isAdminMode ? 'block' : 'none';
 }
+
