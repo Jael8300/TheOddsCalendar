@@ -544,6 +544,7 @@ function generateCalendar() {
         const dayDiv = document.createElement('div');
         dayDiv.className = 'calendar-day other-month';
         dayDiv.textContent = daysInPrevMonth - i;
+        // No onclick for other month days
         grid.appendChild(dayDiv);
     }
     
@@ -554,7 +555,6 @@ function generateCalendar() {
         
         dayDiv.className = 'calendar-day';
         dayDiv.textContent = day;
-        dayDiv.onclick = () => openEventModal(dateStr);
         
         // Check if it's today
         if (dateStr === todayStr) {
@@ -564,6 +564,10 @@ function generateCalendar() {
         // Check for events and user polling status
         if (events[dateStr] && events[dateStr].length > 0) {
             dayDiv.classList.add('has-event');
+            
+            // ONLY add click event if there are events
+            dayDiv.onclick = () => openEventModal(dateStr);
+            dayDiv.style.cursor = 'pointer';
             
             if (currentUser) {
                 // Check if user has polled on all events for this date
@@ -591,6 +595,10 @@ function generateCalendar() {
             const indicator = document.createElement('div');
             indicator.className = 'event-indicator';
             dayDiv.appendChild(indicator);
+        } else {
+            // NO events - make it non-clickable
+            dayDiv.style.cursor = 'default';
+            // No onclick event added
         }
         
         grid.appendChild(dayDiv);
@@ -603,11 +611,12 @@ function generateCalendar() {
         const dayDiv = document.createElement('div');
         dayDiv.className = 'calendar-day other-month';
         dayDiv.textContent = day;
+        // No onclick for other month days
         grid.appendChild(dayDiv);
     }
 }
 
-// Generate poll results display
+// Replace your generatePollResults function with this corrected version
 function generatePollResults(event) {
     const polls = event.polls;
     const attendingUsers = [];
@@ -631,52 +640,72 @@ function generatePollResults(event) {
     attendingUsers.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     notAttendingUsers.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     
+    // Check current user's status
+    const currentUserPoll = event.polls[currentUser];
+    const userAttending = currentUserPoll ? currentUserPoll.attending : null;
+    
     let resultsHTML = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">';
     
-    // Attending column
+    // Attending column - CLICKABLE
     resultsHTML += `
-        <div style="background: white; padding: 12px; border-radius: 8px; border: 2px solid #B2AB2B;">
-            <h5 style="color: #B2AB2B; margin-bottom: 8px; font-size: 14px;">✅ Can Attend (${attendingUsers.length})</h5>
+        <div class="poll-option ${userAttending === true ? 'user-selected' : ''}" 
+             onclick="pollEvent(${event.id}, true)" 
+             style="background: #B2AB2B; padding: 12px; border-radius: 8px; border: 2px solid #402924; cursor: pointer; transition: all 0.2s ease;">
+            <h5 style="color: #402924; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Can Attend (${attendingUsers.length})</span>
+                ${userAttending === true ? '<span style="font-size: 12px;">← You</span>' : '<span style="font-size: 12px; opacity: 0.7;">Click to vote</span>'}
+            </h5>
             ${attendingUsers.length > 0 ? 
                 attendingUsers.map(user => `
                     <div style="margin-bottom: 6px;">
-                        <span style="font-weight: 500; color: #B2AB2B;">${user.name}</span>
-                        <div style="font-size: 11px; color: #9A942A;">
+                        <span style="font-weight: 500; color: white; ${user.name === currentUser ? 'background: rgba(178, 171, 43, 0.2); padding: 2px 4px; border-radius: 3px;' : ''}">${user.name}</span>
+                        <div style="font-size: 11px; color: white;">
                             ${new Date(user.timestamp).toLocaleDateString()} at ${new Date(user.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </div>
                     </div>
                 `).join('') : 
-                '<span style="color: #402924; font-size: 12px;">No one yet</span>'
+                ''
             }
         </div>
     `;
     
-    // Not attending column
+    // Not attending column - CLICKABLE
     resultsHTML += `
-        <div style="background: white; padding: 12px; border-radius: 8px; border: 2px solid #7C9DD2;">
-            <h5 style="color: #7C9DD2; margin-bottom: 8px; font-size: 14px;">❌ Can't Attend (${notAttendingUsers.length})</h5>
+        <div class="poll-option ${userAttending === false ? 'user-selected' : ''}" 
+             onclick="pollEvent(${event.id}, false)" 
+             style="background: #7C9DD2; padding: 12px; border-radius: 8px; border: 2px solid #402924; cursor: pointer; transition: all 0.2s ease;">
+            <h5 style="color: #402924; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Can't Attend (${notAttendingUsers.length})</span>
+                ${userAttending === false ? '<span style="font-size: 12px;">← You</span>' : '<span style="font-size: 12px; opacity: 0.7;">Click to vote</span>'}
+            </h5>
             ${notAttendingUsers.length > 0 ? 
                 notAttendingUsers.map(user => `
                     <div style="margin-bottom: 6px;">
-                        <span style="font-weight: 500; color: #7C9DD2;">${user.name}</span>
-                        <div style="font-size: 11px; color: #6B8BC4;">
+                        <span style="font-weight: 500; color: white; ${user.name === currentUser ? 'background: rgba(124, 157, 210, 0.2); padding: 2px 4px; border-radius: 3px;' : ''}">${user.name}</span>
+                        <div style="font-size: 11px; color: white;">
                             ${new Date(user.timestamp).toLocaleDateString()} at ${new Date(user.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </div>
                     </div>
                 `).join('') : 
-                '<span style="color: #402924; font-size: 12px;">No one yet</span>'
+                ''
             }
         </div>
     `;
     
     resultsHTML += '</div>';
     
-    // Add summary
+    // Add summary with proper yellow color
     const totalPolls = attendingUsers.length + notAttendingUsers.length;
     if (totalPolls > 0) {
         resultsHTML += `
-            <div class="poll-summary" style="margin-top: 12px; text-align: center; font-size: 12px;">
+            <div class="poll-summary" style="margin-top: 12px; text-align: center; font-size: 12px; color: #F4D68C !important;">
                 Total responses: ${totalPolls} • ${attendingUsers.length} attending, ${notAttendingUsers.length} not attending
+            </div>
+        `;
+    } else {
+        resultsHTML += `
+            <div class="poll-summary" style="margin-top: 12px; text-align: center; font-size: 12px; color: #F4D68C !important;">
+                No votes yet - click on "Can Attend" or "Can't Attend" above to vote!
             </div>
         `;
     }
@@ -684,12 +713,14 @@ function generatePollResults(event) {
     return resultsHTML;
 }
 
-// Open event modal
+// Replace your openEventModal function with this corrected version
 function openEventModal(dateStr) {
     if (!currentUser) {
         alert('Please enter your name first to view events');
         return;
     }
+    
+    console.log('Opening modal for date:', dateStr); // Debug log
     
     const dayEvents = events[dateStr] || [];
     const modal = document.getElementById('eventModal');
@@ -697,10 +728,14 @@ function openEventModal(dateStr) {
     const eventDetails = document.getElementById('eventDetails');
     const pollingSection = document.getElementById('pollingSection');
     
+    console.log('Events for this date:', dayEvents); // Debug log
+    
     if (dayEvents.length === 0) {
         modalTitle.textContent = `No Events - ${new Date(dateStr).toDateString()}`;
-        eventDetails.innerHTML = '<p>No events scheduled for this date.</p>';
-        pollingSection.innerHTML = '';
+        eventDetails.innerHTML = '<p style="color: #FAE3B0;">No events scheduled for this date.</p>';
+        if (pollingSection) {
+            pollingSection.style.display = 'none';
+        }
         modal.style.display = 'block';
         return;
     }
@@ -708,52 +743,34 @@ function openEventModal(dateStr) {
     modalTitle.textContent = `Events - ${new Date(dateStr).toDateString()}`;
     
     let detailsHTML = '';
-    let pollHTML = '';
     
     dayEvents.forEach((event, index) => {
+        console.log('Processing event:', event); // Debug log
+        
         detailsHTML += `
             <div class="event-details">
-                <h3>${event.title}</h3>
-                ${event.time ? `<p><strong>Time:</strong> ${event.time}</p>` : ''}
-                ${event.description ? `<p><strong>Description:</strong> ${event.description}</p>` : ''}
+                <h3 style="color: #F4D68C !important; margin-bottom: 12px; font-weight: 600; font-size: 1.125rem;">${event.title}</h3>
+                ${event.time ? `<p style="color: #FAE3B0;"><strong>Time:</strong> ${event.time}</p>` : ''}
+                ${event.description ? `<p style="color: #FAE3B0;"><strong>Description:</strong> ${event.description}</p>` : ''}
                 
                 <div class="poll-results" style="margin-top: 16px;">
-                    <h4 style="color: #374151; font-size: 1rem; margin-bottom: 12px;">Poll Results:</h4>
+                    <h4 style="color: #F4D68C !important; font-size: 1rem; margin-bottom: 12px;">Vote & See Results:</h4>
                     ${generatePollResults(event)}
                 </div>
             </div>
-            ${index < dayEvents.length - 1 ? '<hr style="margin: 20px 0;">' : ''}
-        `;
-        
-        const userPoll = event.polls[currentUser];
-        const pollStatus = userPoll ? 
-            (userPoll.attending ? 'attending' : 'not-attending') : 'not-voted';
-        
-        pollHTML += `
-            <div style="margin-bottom: 30px; padding: 15px; border-left: 4px solid #3498db;">
-                <h4>${event.title}</h4>
-                <div class="poll-buttons">
-                    <button class="btn btn-success" onclick="pollEvent(${event.id}, true)">
-                        ✓ I'll Attend
-                    </button>
-                    <button class="btn btn-danger" onclick="pollEvent(${event.id}, false)">
-                        ✗ Can't Attend
-                    </button>
-                </div>
-                <div class="poll-status ${pollStatus}">
-                    ${userPoll ? 
-                        (userPoll.attending ? 
-                            `You're attending this event` : 
-                            `You can't attend this event`) : 
-                        'Please vote on your attendance'}
-                </div>
-                ${userPoll ? `<div class="poll-timestamp">Voted on: ${new Date(userPoll.timestamp).toLocaleString()}</div>` : ''}
-            </div>
+            ${index < dayEvents.length - 1 ? '<hr style="margin: 20px 0; border-color: #FAE3B0;">' : ''}
         `;
     });
     
+    console.log('Generated HTML:', detailsHTML); // Debug log
+    
     eventDetails.innerHTML = detailsHTML;
-    pollingSection.innerHTML = pollHTML;
+    
+    // Hide polling section if it exists
+    if (pollingSection) {
+        pollingSection.style.display = 'none';
+    }
+    
     modal.style.display = 'block';
 }
 
@@ -838,13 +855,13 @@ window.onclick = function(event) {
     }
 }
 
-// Refresh data from Google Sheets
-async function refreshFromSheets() {
-    await loadEventsFromSheets();
-    generateCalendar();
-    generateUpcomingEvents(); // Update upcoming events list
-    alert('Data refreshed from Google Sheets!');
-}
+// // Refresh data from Google Sheets
+// async function refreshFromSheets() {
+//     await loadEventsFromSheets();
+//     generateCalendar();
+//     generateUpcomingEvents(); // Update upcoming events list
+//     alert('Data refreshed from Google Sheets!');
+// }
 
 // Clear all data (for admin use)
 function clearAllData() {
@@ -869,3 +886,16 @@ window.addEventListener('load', function() {
     }
 });
 
+// Add this function to your JavaScript file
+function closeAdminMode() {
+    isAdminMode = false;
+    const adminSection = document.getElementById('adminSection');
+    adminSection.style.display = 'none';
+}
+
+// You can also update your existing toggleAdminMode function to be more explicit:
+function toggleAdminMode() {
+    isAdminMode = !isAdminMode;
+    const adminSection = document.getElementById('adminSection');
+    adminSection.style.display = isAdminMode ? 'block' : 'none';
+}
