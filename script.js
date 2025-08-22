@@ -132,6 +132,185 @@ function showUserSwitcher() {
     displayUserList();
 }
 
+// Calendar sync functions
+async function syncToCalendar(event, calendarType = 'phone') {
+    if (!currentUser) {
+        alert('Please log in first');
+        return;
+    }
+
+    // Check if user is attending this event
+    const userPoll = event.polls[currentUser];
+    if (!userPoll || !userPoll.attending) {
+        const confirm = window.confirm(
+            `You haven't voted "Can Attend" for this event yet.\n\n` +
+            `Do you want to:\n` +
+            `• Click "OK" to mark yourself as attending AND add to calendar\n` +
+            `• Click "Cancel" to just add to calendar without voting`
+        );
+        
+        if (confirm) {
+            // Mark user as attending first
+            await pollEvent(event.id, true);
+        }
+    }
+
+    if (calendarType === 'google') {
+        await syncToGoogleCalendar(event);
+    } else {
+        await syncToPhoneCalendar(event);
+    }
+}
+
+async function syncToGoogleCalendar(event) {
+    try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
+            action: 'addToGoogleCalendar',
+            event: event,
+            userName: currentUser
+        }));
+
+        console.log('Adding event to Google Calendar...');
+        
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                showCalendarSyncMessage(event.title, 'Google Calendar');
+            } else {
+                throw new Error(result.message);
+            }
+        } else {
+            throw new Error('Failed to communicate with Google Calendar service');
+        }
+        
+    } catch (error) {
+        console.error('Error syncing to Google Calendar:', error);
+        
+        // Fallback to Google Calendar URL method
+        const googleCalendarUrl = createGoogleCalendarUrl(event);
+        window.open(googleCalendarUrl, '_blank');
+        showCalendarSyncMessage(event.title, 'Google Calendar (opened in new tab)');
+    }
+}
+
+function createGoogleCalendarUrl(event) {
+    // Parse the date and time
+    const eventDate = new Date(event.date);
+    let startDateTime = new Date(event.date);
+    
+    // Handle time if provided
+    if (event.time) {
+        const [hours, minutes] = event.time.split(':');
+        startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    } else {
+        startDateTime.setHours(9, 0, 0, 0);
+    }
+    
+    // Calculate end time
+    const endDateTime = new Date(startDateTime);
+    const duration = event.duration && !isNaN(parseFloat(event.duration)) ? parseFloat(event.duration) : 2;
+    const durationHours = Math.floor(duration);
+    const durationMinutes = Math.round((duration - durationHours) * 60);
+    endDateTime.setHours(endDateTime.getHours() + durationHours, endDateTime.getMinutes() + durationMinutes);
+    
+    // Format dates for Google Calendar URL (YYYYMMDDTHHMMSSZ)
+    const formatGoogleDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    };
+    
+    const startFormatted = formatGoogleDate(startDateTime);
+    const endFormatted = formatGoogleDate(endDateTime);
+    
+    // Build Google Calendar URL
+    const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: event.title,
+        dates: `${startFormatted}/${endFormatted}`,
+        details: event.description || 'The Odds performance event',
+        location: event.location || 'TBD'
+    });
+    
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+async function syncToPhoneCalendar(event) {
+    try {
+        // Generate ICS file using GET method (more reliable for downloads)
+        const params = new URLSearchParams({
+            action: 'getICS',
+            eventId: event.id,
+            title: event.title,
+            date: event.date,
+            time: event.time || '',
+            description: event.description || '',
+            location: event.location || '',
+            duration: event.duration || 2,
+            userName: currentUser
+        });
+        
+        const icsUrl = `${APPS_SCRIPT_URL}?${params.toString()}`;
+        
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = icsUrl;
+        link.download = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message
+        showCalendarSyncMessage(event.title, 'Phone Calendar');
+        
+    } catch (error) {
+        console.error('Error syncing to phone calendar:', error);
+        alert('Sorry, there was an error syncing to your calendar. Please try again.');
+    }
+}
+
+function showCalendarSyncMessage(eventTitle, calendarType) {
+    // Create and show a temporary success message
+    const message = document.createElement('div');
+    message.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        font-family: Arial, sans-serif;
+        max-width: 300px;
+    `;
+    
+    const messageText = calendarType === 'Phone Calendar' 
+        ? `<strong>📅 Calendar File Downloaded!</strong><br>
+           <small>"${eventTitle}" has been downloaded.<br>
+           Tap the downloaded .ics file to add it to your phone's calendar.</small>`
+        : `<strong>📅 Added to ${calendarType}!</strong><br>
+           <small>"${eventTitle}" has been added to your calendar.</small>`;
+    
+    message.innerHTML = messageText;
+    
+    document.body.appendChild(message);
+    
+    // Remove message after 5 seconds
+    setTimeout(() => {
+        if (message.parentNode) {
+            message.parentNode.removeChild(message);
+        }
+    }, 5000);
+}
+
 // Google Sheets API functions
 async function loadEventsFromSheets() {
     try {
@@ -165,6 +344,8 @@ async function loadEventsFromSheets() {
                     const date = row[2];
                     const time = row[3] || '';
                     const description = row[4] || '';
+                    const location = row[5] || '';  // New location column
+                    const duration = row[6] || 2;   // New duration column (default 2 hours)
                     
                     if (!events[date]) {
                         events[date] = [];
@@ -176,6 +357,8 @@ async function loadEventsFromSheets() {
                         date,
                         time,
                         description,
+                        location,
+                        duration,
                         polls: {}
                     });
                 }
@@ -694,6 +877,32 @@ function generatePollResults(event) {
     
     resultsHTML += '</div>';
     
+    // Add calendar sync buttons if user is attending
+    if (userAttending === true) {
+        resultsHTML += `
+            <div style="margin-top: 16px; text-align: center;">
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="syncToCalendar({id: ${event.id}, title: '${event.title.replace(/'/g, "\\'")}', date: '${event.date}', time: '${event.time || ''}', description: '${(event.description || '').replace(/'/g, "\\'")}', location: '${(event.location || '').replace(/'/g, "\\'")}', duration: '${event.duration || 2}', polls: ${JSON.stringify(event.polls).replace(/'/g, "\\'")}}), 'google')" 
+                            style="background: #4285f4; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease;"
+                            onmouseover="this.style.background='#3367d6'" 
+                            onmouseout="this.style.background='#4285f4'">
+                        📅 Google Calendar
+                    </button>
+                    
+                    <button onclick="syncToCalendar({id: ${event.id}, title: '${event.title.replace(/'/g, "\\'")}', date: '${event.date}', time: '${event.time || ''}', description: '${(event.description || '').replace(/'/g, "\\'")}', location: '${(event.location || '').replace(/'/g, "\\'")}', duration: '${event.duration || 2}', polls: ${JSON.stringify(event.polls).replace(/'/g, "\\'")}}), 'phone')" 
+                            style="background: #4CAF50; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease;"
+                            onmouseover="this.style.background='#45a049'" 
+                            onmouseout="this.style.background='#4CAF50'">
+                        📱 Phone Calendar
+                    </button>
+                </div>
+                <div style="font-size: 11px; color: #FAE3B0; margin-top: 8px; opacity: 0.8;">
+                    Google Calendar opens in browser • Phone Calendar downloads .ics file
+                </div>
+            </div>
+        `;
+    }
+    
     // Add summary with proper yellow color
     const totalPolls = attendingUsers.length + notAttendingUsers.length;
     if (totalPolls > 0) {
@@ -751,6 +960,8 @@ function openEventModal(dateStr) {
             <div class="event-details">
                 <h3 style="color: #F4D68C !important; margin-bottom: 12px; font-weight: 600; font-size: 1.125rem;">${event.title}</h3>
                 ${event.time ? `<p style="color: #FAE3B0;"><strong>Time:</strong> ${event.time}</p>` : ''}
+                ${event.location ? `<p style="color: #FAE3B0;"><strong>Location:</strong> ${event.location}</p>` : ''}
+                ${event.duration ? `<p style="color: #FAE3B0;"><strong>Duration:</strong> ${event.duration} hours</p>` : ''}
                 ${event.description ? `<p style="color: #FAE3B0;"><strong>Description:</strong> ${event.description}</p>` : ''}
                 
                 <div class="poll-results" style="margin-top: 16px;">
@@ -855,14 +1066,6 @@ window.onclick = function(event) {
     }
 }
 
-// // Refresh data from Google Sheets
-// async function refreshFromSheets() {
-//     await loadEventsFromSheets();
-//     generateCalendar();
-//     generateUpcomingEvents(); // Update upcoming events list
-//     alert('Data refreshed from Google Sheets!');
-// }
-
 // Clear all data (for admin use)
 function clearAllData() {
     if (confirm('Are you sure you want to clear all events and user data? This cannot be undone.')) {
@@ -899,4 +1102,3 @@ function toggleAdminMode() {
     const adminSection = document.getElementById('adminSection');
     adminSection.style.display = isAdminMode ? 'block' : 'none';
 }
-
