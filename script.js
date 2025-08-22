@@ -133,7 +133,7 @@ function showUserSwitcher() {
 }
 
 // Calendar sync functions
-function syncToCalendarById(eventId, calendarType = 'phone') {
+function syncToCalendarById(eventId) {
     // Find the event by ID
     let targetEvent = null;
     for (let dateKey in events) {
@@ -146,10 +146,10 @@ function syncToCalendarById(eventId, calendarType = 'phone') {
         return;
     }
     
-    syncToCalendar(targetEvent, calendarType);
+    syncToGoogleCalendar(targetEvent);
 }
 
-async function syncToCalendar(event, calendarType = 'phone') {
+async function syncToGoogleCalendar(event) {
     if (!currentUser) {
         alert('Please log in first');
         return;
@@ -171,48 +171,10 @@ async function syncToCalendar(event, calendarType = 'phone') {
         }
     }
 
-    if (calendarType === 'google') {
-        await syncToGoogleCalendar(event);
-    } else {
-        await syncToPhoneCalendar(event);
-    }
-}
-
-async function syncToGoogleCalendar(event) {
-    try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify({
-            action: 'addToGoogleCalendar',
-            event: event,
-            userName: currentUser
-        }));
-
-        console.log('Adding event to Google Calendar...');
-        
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            body: formData
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success) {
-                showCalendarSyncMessage(event.title, 'Google Calendar');
-            } else {
-                throw new Error(result.message);
-            }
-        } else {
-            throw new Error('Failed to communicate with Google Calendar service');
-        }
-        
-    } catch (error) {
-        console.error('Error syncing to Google Calendar:', error);
-        
-        // Fallback to Google Calendar URL method
-        const googleCalendarUrl = createGoogleCalendarUrl(event);
-        window.open(googleCalendarUrl, '_blank');
-        showCalendarSyncMessage(event.title, 'Google Calendar (opened in new tab)');
-    }
+    // Use Google Calendar URL method (most reliable)
+    const googleCalendarUrl = createGoogleCalendarUrl(event);
+    window.open(googleCalendarUrl, '_blank');
+    showCalendarSyncMessage(event.title);
 }
 
 function createGoogleCalendarUrl(event) {
@@ -255,43 +217,7 @@ function createGoogleCalendarUrl(event) {
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-async function syncToPhoneCalendar(event) {
-    try {
-        // Generate ICS file using GET method (more reliable for downloads)
-        const params = new URLSearchParams({
-            action: 'getICS',
-            eventId: event.id,
-            title: event.title,
-            date: event.date,
-            time: event.time || '',
-            description: event.description || '',
-            location: event.location || '',
-            duration: event.duration || 2,
-            userName: currentUser
-        });
-        
-        const icsUrl = `${APPS_SCRIPT_URL}?${params.toString()}`;
-        
-        // Create a temporary link and trigger download
-        const link = document.createElement('a');
-        link.href = icsUrl;
-        link.download = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Show success message
-        showCalendarSyncMessage(event.title, 'Phone Calendar');
-        
-    } catch (error) {
-        console.error('Error syncing to phone calendar:', error);
-        alert('Sorry, there was an error syncing to your calendar. Please try again.');
-    }
-}
-
-function showCalendarSyncMessage(eventTitle, calendarType) {
+function showCalendarSyncMessage(eventTitle) {
     // Create and show a temporary success message
     const message = document.createElement('div');
     message.style.cssText = `
@@ -308,23 +234,19 @@ function showCalendarSyncMessage(eventTitle, calendarType) {
         max-width: 300px;
     `;
     
-    const messageText = calendarType === 'Phone Calendar' 
-        ? `<strong>📅 Calendar File Downloaded!</strong><br>
-           <small>"${eventTitle}" has been downloaded.<br>
-           Tap the downloaded .ics file to add it to your phone's calendar.</small>`
-        : `<strong>📅 Added to ${calendarType}!</strong><br>
-           <small>"${eventTitle}" has been added to your calendar.</small>`;
-    
-    message.innerHTML = messageText;
+    message.innerHTML = `
+        <strong>📅 Opening Google Calendar!</strong><br>
+        <small>"${eventTitle}" is being added to your Google Calendar in a new tab.</small>
+    `;
     
     document.body.appendChild(message);
     
-    // Remove message after 5 seconds
+    // Remove message after 4 seconds
     setTimeout(() => {
         if (message.parentNode) {
             message.parentNode.removeChild(message);
         }
-    }, 5000);
+    }, 4000);
 }
 
 // Google Sheets API functions
@@ -893,27 +815,18 @@ function generatePollResults(event) {
     
     resultsHTML += '</div>';
     
-    // Add calendar sync buttons if user is attending
+    // Add calendar sync button if user is attending
     if (userAttending === true) {
         resultsHTML += `
             <div style="margin-top: 16px; text-align: center;">
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="syncToCalendarById(${event.id}, 'google')" 
-                            style="background: #4285f4; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease;"
-                            onmouseover="this.style.background='#3367d6'" 
-                            onmouseout="this.style.background='#4285f4'">
-                        📅 Google Calendar
-                    </button>
-                    
-                    <button onclick="syncToCalendarById(${event.id}, 'phone')" 
-                            style="background: #4CAF50; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease;"
-                            onmouseover="this.style.background='#45a049'" 
-                            onmouseout="this.style.background='#4CAF50'">
-                        📱 Phone Calendar
-                    </button>
-                </div>
-                <div style="font-size: 11px; color: #FAE3B0; margin-top: 8px; opacity: 0.8;">
-                    Google Calendar opens in browser • Phone Calendar downloads .ics file
+                <button onclick="syncToCalendarById(${event.id})" 
+                        style="background: #4285f4; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease;"
+                        onmouseover="this.style.background='#3367d6'" 
+                        onmouseout="this.style.background='#4285f4'">
+                    📅 Add to Google Calendar
+                </button>
+                <div style="font-size: 12px; color: #FAE3B0; margin-top: 8px; opacity: 0.8;">
+                    Opens Google Calendar in a new tab with event details pre-filled
                 </div>
             </div>
         `;
