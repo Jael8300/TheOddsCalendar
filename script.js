@@ -133,6 +133,22 @@ function showUserSwitcher() {
 }
 
 // Calendar sync functions
+function syncToCalendarById(eventId, calendarType = 'phone') {
+    // Find the event by ID
+    let targetEvent = null;
+    for (let dateKey in events) {
+        targetEvent = events[dateKey].find(event => event.id === eventId);
+        if (targetEvent) break;
+    }
+    
+    if (!targetEvent) {
+        alert('Event not found');
+        return;
+    }
+    
+    syncToCalendar(targetEvent, calendarType);
+}
+
 async function syncToCalendar(event, calendarType = 'phone') {
     if (!currentUser) {
         alert('Please log in first');
@@ -882,14 +898,14 @@ function generatePollResults(event) {
         resultsHTML += `
             <div style="margin-top: 16px; text-align: center;">
                 <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="syncToCalendar({id: ${event.id}, title: '${event.title.replace(/'/g, "\\'")}', date: '${event.date}', time: '${event.time || ''}', description: '${(event.description || '').replace(/'/g, "\\'")}', location: '${(event.location || '').replace(/'/g, "\\'")}', duration: '${event.duration || 2}', polls: ${JSON.stringify(event.polls).replace(/'/g, "\\'")}}), 'google')" 
+                    <button onclick="syncToCalendarById(${event.id}, 'google')" 
                             style="background: #4285f4; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease;"
                             onmouseover="this.style.background='#3367d6'" 
                             onmouseout="this.style.background='#4285f4'">
                         📅 Google Calendar
                     </button>
                     
-                    <button onclick="syncToCalendar({id: ${event.id}, title: '${event.title.replace(/'/g, "\\'")}', date: '${event.date}', time: '${event.time || ''}', description: '${(event.description || '').replace(/'/g, "\\'")}', location: '${(event.location || '').replace(/'/g, "\\'")}', duration: '${event.duration || 2}', polls: ${JSON.stringify(event.polls).replace(/'/g, "\\'")}}), 'phone')" 
+                    <button onclick="syncToCalendarById(${event.id}, 'phone')" 
                             style="background: #4CAF50; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s ease;"
                             onmouseover="this.style.background='#45a049'" 
                             onmouseout="this.style.background='#4CAF50'">
